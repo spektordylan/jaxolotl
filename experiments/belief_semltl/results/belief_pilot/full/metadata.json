@@ -1,0 +1,54 @@
+{
+  "git_revision_at_run": "2c23efa5985e302a64d98f8bcbc1612c2081dd05",
+  "status": "exploratory frozen-policy pilot",
+  "formula_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9
+  ],
+  "formula_strings": [
+    "F (a & (!b U c)) & F d",
+    "(F d) & (!f U (d & F b))",
+    "(F ((a | c | j) & F b)) & (F (c & F d)) & F k",
+    "!a U (b & (!c U (d & (!e U f))))",
+    "G !(k | l) & F (a & F (e & F (i & F d)))",
+    "F ((a | l) & ((a => (!b U (c & F d))) & (l => F g)))",
+    "F (a & F (b & F (c & F (d & F (e & F (f & F (g & F h)))))))",
+    "G !l & F (i & F (e & F (a & F (k & F (g & F c)))))",
+    "!(b | d | f | h | j) U (l & F ((a | k) & ((a => F c))))"
+  ],
+  "epsilon_formula_5_excluded": true,
+  "methods": [
+    "hard",
+    "map",
+    "weighted"
+  ],
+  "noise_probabilities": [
+    0.0,
+    0.1,
+    0.3
+  ],
+  "model_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "num_episodes_per_seed_formula_condition": 16,
+  "evaluation_key": 100,
+  "belief_model": "uniform independent prior on 13 true assignments per step",
+  "zero_noise_episode_parity": "PASS",
+  "confidence_intervals": "two-sided Student t over pretrained model seed means"
+}
