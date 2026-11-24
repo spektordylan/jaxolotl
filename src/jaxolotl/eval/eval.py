@@ -20,6 +20,7 @@ class EvalState(NamedTuple):
     lengths: jax.Array  # (num_episodes,) lengths of episodes
     completed: jax.Array  # (num_episodes,) whether episode is completed
     violations: jax.Array  # (num_episodes,) whether each episode entered a sink
+    disagreements: jax.Array  # (num_episodes,) whether state disagreed while active
 
 
 class EvalResetOptions(NamedTuple):
@@ -39,16 +40,19 @@ class Evaluator(eqx.Module):
     num_episodes: int  # Number of evaluation episodes. We run each episode in parallel.
     discount: float  # Discount factor for returns.
     return_trajs: bool  # Whether to return trajectories. May use a lot of memory.
+    return_disagreement: bool  # Whether to return state disagreements.
 
     def __init__(
         self,
         num_episodes: int,
         discount: float,
         return_trajs: bool = False,
+        return_disagreement: bool = False,
     ):
         self.num_episodes = num_episodes
         self.discount = discount
         self.return_trajs = return_trajs
+        self.return_disagreement = return_disagreement
 
     @eqx.filter_jit
     def eval(
@@ -130,6 +134,13 @@ class Evaluator(eqx.Module):
                 eval_state.violations,
                 jnp.logical_and(~eval_state.completed, is_sink),
             )
+            is_disagreement: jax.Array = transition.info.get(
+                "disagreement", jnp.zeros((), dtype=bool)
+            ).astype(bool)
+            disagreements = jnp.logical_or(
+                eval_state.disagreements,
+                jnp.logical_and(~eval_state.completed, is_disagreement),
+            )
 
             # update completed
             completed = jnp.logical_or(eval_state.completed, transition.done)
@@ -140,6 +151,7 @@ class Evaluator(eqx.Module):
                 lengths=lengths,
                 completed=completed,
                 violations=violations,
+                disagreements=disagreements,
             )
             return (
                 agent,
@@ -179,6 +191,7 @@ class Evaluator(eqx.Module):
             lengths=jnp.zeros((self.num_episodes,), dtype=jnp.int32),
             completed=jnp.zeros((self.num_episodes,), dtype=bool),
             violations=jnp.zeros((self.num_episodes,), dtype=bool),
+            disagreements=jnp.zeros((self.num_episodes,), dtype=bool),
         )
         final = eqx_utils.filter_while_loop(
             rollout_cond,
@@ -186,6 +199,15 @@ class Evaluator(eqx.Module):
             (agent, env_state, obsv, state, trajs, index, key),
         )
         _, _, _, state, trajs, _, _ = final
+        if self.return_disagreement:
+            return (
+                state.returns,
+                state.disc_returns,
+                state.lengths,
+                state.violations,
+                state.disagreements,
+                trajs,
+            )
         return (
             state.returns,
             state.disc_returns,

@@ -225,7 +225,11 @@ def load_model_checkpoints(
 
 
 def make_eval_fn(
-    cfg: DictConfig, num_models: int, num_formulas: int, return_trajs: bool
+    cfg: DictConfig,
+    num_models: int,
+    num_formulas: int,
+    return_trajs: bool,
+    return_disagreement: bool = False,
 ) -> Callable:
     """Creates an eval function for different formulas and seeds. The function
     returns arrays of shape (num_models, num_formulas, num_episodes)."""
@@ -234,6 +238,7 @@ def make_eval_fn(
         num_episodes=cfg.eval.num_episodes,
         discount=cfg.eval.discount,
         return_trajs=return_trajs,
+        return_disagreement=return_disagreement,
     )
     if cfg.eval.models_per_batch == "all":
         model_batch_size = num_models
