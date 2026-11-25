@@ -1,0 +1,67 @@
+{
+  "git_revision_at_run": "45921d86e3130c2238e5528eb62332971273a203",
+  "status": "privileged oracle diagnostic; NOT a deployable monitor or learned policy",
+  "formula_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9
+  ],
+  "formula_strings": [
+    "F (a & (!b U c)) & F d",
+    "(F d) & (!f U (d & F b))",
+    "(F ((a | c | j) & F b)) & (F (c & F d)) & F k",
+    "!a U (b & (!c U (d & (!e U f))))",
+    "G !(k | l) & F (a & F (e & F (i & F d)))",
+    "F ((a | l) & ((a => (!b U (c & F d))) & (l => F g)))",
+    "F (a & F (b & F (c & F (d & F (e & F (f & F (g & F h)))))))",
+    "G !l & F (i & F (e & F (a & F (k & F (g & F c)))))",
+    "!(b | d | f | h | j) U (l & F ((a | k) & ((a => F c))))"
+  ],
+  "excluded_epsilon_formula_index": 5,
+  "model_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "episodes_per_seed_formula_condition": 16,
+  "noise_probabilities": [
+    0.0,
+    0.1,
+    0.3
+  ],
+  "methods": [
+    "hard",
+    "oracle"
+  ],
+  "oracle_intervention": "replace only policy-facing semantic embedding and epsilon features with ground-truth LDBA state; retain noisy wrapper reward, termination and physical dynamics",
+  "oracle_privileged_information": "true LDBA state and true proposition assignment used in policy-facing monitor",
+  "noise_model": "symmetric categorical proposition label corruption sampled by NoisySemanticLDBAWrapper",
+  "model_weights": "frozen pretrained SemLTL checkpoints, identical for both conditions",
+  "configuration": "alg=sem_ltl, env=letter_world, task_set=finite, run=pretrained, reset_source=test",
+  "eval_key": 100,
+  "matched_conditions": "same model seeds/formulas/episodes/reset and action sampling RNG keys; trajectories may diverge after action choices differ",
+  "zero_noise_hard_oracle_parity": "PASS",
+  "oracle_noise_invariance": "PASS",
+  "oracle_monitor_disagreement": "identically zero by construction; latent unused noisy monitor may disagree but is not an oracle error",
+  "uncertainty": "two-sided Student t confidence interval across 10 (or selected) pretrained seeds; fixed task set",
+  "limitations": [
+    "oracle is privileged and inaccessible in a realistic noisy-observation deployment",
+    "oracle is an informative reference for the existing frozen network, not a mathematical upper bound on all controllers",
+    "same random schedule does not imply identical post-intervention trajectories",
+    "no epsilon-containing specifications evaluated",
+    "oracle does not train or adapt the network; only semantic monitoring is modified"
+  ]
+}
