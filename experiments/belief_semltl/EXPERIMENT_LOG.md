@@ -1,6 +1,6 @@
 # SemLTL under uncertain propositions — chronological experiment log
 
-**Created:** 2026-11-24. **Updated:** 2026-11-24. **Status:** Training-free frozen-policy exploration closed; future learned interventions not yet implemented. Research log, not a final claims section. Update this file as new experiments finish; do not replace negative results with later positive results. This log is intended to support the December 4 project report and presentation.
+**Created:** 2026-11-24. **Updated:** 2026-11-27 (UTC). **Status:** Phase 1 complete; GRU-MAP, learned-belief aggregation, empirical-prior filtering, and one-round DAgger evaluated. Residual oracle distillation is documented separately on its experiment branch. Research log, not a final claims section. Update this file as new experiments finish; do not replace negative results with later positive results. This log is intended to support the December 4 project report and presentation.
 
 ## Research question and controlled environment
 
@@ -81,7 +81,7 @@ For a true assignment `a`, the reported label `y` is correct with probability `1
 - **Code:** `run_policy_mixture.py`, `policy_mixture_agent.py`, `mixture_sampling.py`, `policy_mixture_wrapper.py` (corrected), `mixture_stats.py`, `MIXTURE_README.md`; results under `results/policy_mixture/full/`. Commit the corrected wrapper/tests, not the original broken wrapper from the first patch.
 - **Motivation for next step:** The frozen-policy exploration has tested deterministic hard tracking, MAP, weighted embeddings and stochastic output mixtures without finding a practical gain from the uniform-prior belief. A learned uncertainty-aware adapter or carefully scoped noise-aware training is a more distinct intervention than further mixture-weight tuning.
 
-### Frozen-policy exploration — phase conclusion (2026-11-24)
+### Frozen-policy exploration — phase conclusion (historical snapshot, 2026-11-24)
 
 1. **Noisy monitoring creates a meaningful robustness problem.** In the common nine-formula comparison, hard success falls from **0.8458** (p=0) to **0.5708** (p=.30).
 2. **Privileged perfect monitoring reveals headroom:** the oracle retains **0.8458** success at p=.30, a **+27.50 pp** gap over hard (seed-paired 95% CI **[+22.93, +32.07] pp**). The oracle sees the true automaton state, so this is **not** an achievable noisy-detector result and not a universal performance ceiling.
@@ -91,7 +91,7 @@ For a true assignment `a`, the reported label `y` is correct with probability `1
 
 **Presentation/report narrative:** Begin with the robustness problem, then document the unsuccessful Bayesian embedding interventions, shared-trajectory diagnosis, oracle headroom, and unsuccessful policy-output aggregation. Explain why the sequence motivated a switch to learning, rather than hiding the negative results. For every table identify the nine-formula versus provisional ten-formula comparison and avoid treating seed-level CIs as generalization guarantees.
 
-## Next-phase decisions and guardrails
+## Next-phase decisions and guardrails (historical plan from 2026-11-24)
 
 1. **Close the uniform-prior frozen-policy intervention series.** Do not keep tuning mixture weights or adding minor embedding heuristics to the same filter absent new evidence; the prespecified nonzero alpha values all lost in aggregate. The oracle gap alone does not imply a noisy sensor can recover the true automaton state.
 2. **Investigate a genuinely different method.** The leading candidate is a small trainable, uncertainty-aware adapter or oracle-policy distillation protocol with the pretrained SemLTL actor frozen. Design permitted inputs, loss, compute budget, and held-out evaluation before implementation. No adapter results exist yet.
@@ -111,8 +111,78 @@ For a true assignment `a`, the reported label `y` is correct with probability `1
 
 ---
 
-## Phase 2 implementation handoff (2026-11-27; results not yet executed)
+## Phase 2 implementation handoff (historical snapshot, 2026-11-27; subsequently executed)
 
 The partial learned-estimator branch in the exported ZIP included a collector, recurrent GRU model, a `full` checkpoint, and a draft closed-loop evaluator. A corrective patch was prepared without changing any archived results or checkpoints. It aligns online GRU initialization with the existing trajectory dataset (first update **after** the first physical action), masks invalid formula-dependent state logits in training and inference, enforces exact zero-noise parity, adds seed-paired outcome intervals, and safeguards output artifacts against overwriting. New collector datasets also record provenance and use the requested number of test episodes.
 
 The original checkpoint metrics (`models/full/metrics.json`, 72.02% raw state accuracy versus 62.30% hard on the archived split) are **pre-patch records**, not independently reproduced results. The archived `test.npz` was used for best-checkpoint selection, and therefore serves as a validation set. In particular, the 72.02% number does **not** establish a causal success benefit or independent generalization. Neither Jaxolotl parity nor closed-loop policy outcomes were executable in the patch-preparation environment because only the experiment subtree was supplied and the Jaxolotl/Pixi dependencies are absent. Follow `LEARNED_TRACKER_README.md` for required local validation gates and reproduction commands.
+
+
+## Phase 2 — completed interventions and results (late November 2026)
+
+The following results were **reported from full closed-loop runs in the user's Jaxolotl/Pixi environment** after the initial handoff and wrapper fixes. The comparison set is 9 epsilon-free formulas `[0,1,2,3,4,6,7,8,9]`, 16 episodes per seed/formula/noise condition, and policy seeds **7–9** for evaluation. These runs are **not directly interchangeable** with the 10-seed Phase 1 hard/oracle aggregates (`0.8458`/`0.5708`), because the later evaluation uses a different seed cohort. The full-run hard control in this phase is `0.8449` at p=0 and `0.5602` at p=.30.
+
+### Milestone 6 — learned task-state GRU with frozen policy (completed)
+
+- **Intervention:** A 64-hidden-unit recurrent estimator takes `(noisy proposition, previous physical action, hard monitor state)` histories, predicts a valid LDBA state via masked MAP, and substitutes that state's existing semantic embedding into the **unchanged** SemLTL policy. True automaton states are supervised training labels and evaluator ground truth, not deployment inputs. The policy still sees its ordinary spatial grid. At p=0 the intervention explicitly bypasses the estimator, ensuring exact hard-policy parity.
+- **Offline diagnostic on archived `test.npz`:** raw GRU accuracy was `99.01%` versus hard `100.00%` at p=0; `73.92%` versus `64.89%` at p=.10; and `53.53%` versus `36.51%` at p=.30 (GRU advantage `+17.02 pp` at p=.30). These teacher-forced histories were used for checkpoint selection, making this a **validation**, not untouched final-test, result.
+- **Closed-loop result:**
+
+| Noise | Hard success | GRU-MAP success | GRU minus hard | Hard step accuracy | GRU step accuracy |
+|---:|---:|---:|---:|---:|---:|
+| 0.00 | 0.8449 | 0.8449 | +0.00 pp | 1.0000 | 1.0000 |
+| 0.10 | 0.7593 | 0.7801 | +2.08 pp | 0.8348 | 0.8496 |
+| 0.30 | 0.5602 | 0.6366 | +7.64 pp | 0.5419 | 0.5823 |
+
+- **Interpretation:** Learned recurrent state estimation improves **observed** task success under noise, without policy retraining. Offline and online state-accuracy gains are measured on different trajectory distributions and cannot by themselves establish covariate shift as the cause of the difference. The archived checkpoint was previously selected using policy seeds 7–9, so this is an exploratory model-selection/evaluation split, not an independent holdout.
+- **Artifacts:** `LEARNED_TRACKER_README.md`; `models/full/learned_estimator.eqx`; `results/learned_estimator/full/`.
+
+### Milestone 7 — top-3 GRU belief-weighted action aggregation (completed)
+
+- **Intervention:** For the three most probable **valid** LDBA states from the same GRU, evaluate the frozen actor under each state's real embedding, weight **action probabilities** by their renormalized posterior weights, and sample from the resulting policy mixture (`top_k=3`, `alpha=1`). No retraining. Exact zero-noise parity was verified after using the original actor sampler for the p=0 path.
+
+| Noise | Hard success | GRU-MAP | Belief aggregation | Aggregation minus GRU-MAP |
+|---:|---:|---:|---:|---:|
+| 0.00 | 0.8449 | 0.8449 | 0.8449 | +0.00 pp |
+| 0.10 | 0.7593 | 0.7801 | 0.7662 | -1.39 pp |
+| 0.30 | 0.5602 | 0.6366 | 0.6389 | +0.23 pp |
+
+- **Interpretation:** No material incremental benefit relative to GRU-MAP in this full evaluation. This rejects the *tested top-3 policy-probability mixture*, not belief-aware planning generally. The initial 16-episode smoke result of `1.0000` at p=.30 did **not** generalize to the full run.
+- **Artifacts:** `BELIEF_ACTION_AGGREGATION_README.md`; `results/learned_aggregation/full/`.
+
+### Milestone 8 — structured filter, Stage 2a empirical proposition prior (completed); Stage 2b not evaluated
+
+- **Intervention:** Replace the Phase 1 uniform 13-assignment prior with a marginal estimated from the archived **zero-noise training** trajectories, then propagate automaton-state probabilities through the exact LDBA transition table and provide the MAP embedding to the frozen policy. The empirical frequency of `empty` was about **47.45%**, with individual letters roughly **2.7–6.2%**; the commonly posited 85% empty-cell prior is **not** the prior measured in this dataset.
+
+| Noise | Hard success | GRU-MAP | Empirical-prior structured MAP | Structured minus GRU-MAP |
+|---:|---:|---:|---:|---:|
+| 0.00 | 0.8449 | 0.8449 | 0.8449 | +0.00 pp |
+| 0.10 | 0.7593 | 0.7801 | 0.7616 | -1.85 pp |
+| 0.30 | 0.5602 | 0.6366 | 0.5162 | -12.04 pp |
+
+- **Interpretation:** The empirical marginal prior alone is insufficient and is worse even than hard progression at p=.30 (`-4.40 pp`). Neither base-rate suppression nor the exact cause of recursive belief errors was directly isolated by these outcomes. Exact LDBA transitions enforce legal **transitions**, not correct inference; the recursive filter remains an approximation.
+- **Stage 2b:** A formula-agnostic proposition-GRU collector/trainer and symbolic propagation pipeline were implemented, but **no trained Stage 2b full-run result was reported**. Do not claim this method was evaluated or that it generalizes to held-out formulas.
+- **Artifacts:** `STRUCTURED_FILTER_README.md`; `results/structured_filter/empirical/full/`.
+
+### Milestone 9 — one-round DAgger-style GRU fine-tuning (completed)
+
+- **Intervention:** Collect one round of trajectories **controlled by the original GRU-MAP** on policy seeds 0–6, concatenate these with original hard-policy training trajectories, and fine-tune the existing GRU for **three epochs at lr=1e-4**. The frozen actor is unchanged. This uses **true task-state labels**, not expert action labels, so it is DAgger-*style* on-policy dataset aggregation rather than canonical action-imitation DAgger. The original model/checkpoint remains intact.
+- **Full closed-loop comparison, same evaluation keys (policy seeds 7–9):**
+
+| Noise | Hard success | Original GRU-MAP | DAgger GRU-MAP | DAgger minus original, paired 95% seed CI |
+|---:|---:|---:|---:|---:|
+| 0.00 | 0.8449 | 0.8449 | 0.8449 | +0.00 pp [0.00, 0.00] |
+| 0.10 | 0.7593 | 0.7801 | 0.7870 | +0.69 pp [-3.87, +5.26] |
+| 0.30 | 0.5602 | 0.6366 | 0.6620 | +2.55 pp [-6.95, +12.05] |
+
+- **State accuracy:** At p=.30, GRU-MAP increased from `0.5823` to `0.5929` (about `+1.06 pp`). Relative to the concurrently evaluated hard success `0.5602`, DAgger success `0.6620` is an **observed +10.18 pp** (`+10.19 pp` in rounded runner output), equivalent to roughly **35.8% of the p=0 to p=.30 hard-success decrease**. This percentage is a descriptive recovery fraction, not an oracle/headroom benchmark or an inferential guarantee.
+- **Interpretation:** Fine-tuning was directionally positive, but its *incremental* benefit over GRU-MAP is statistically inconclusive; the paired CI includes zero. The offline-versus-online difference alone does not prove the cause was covariate shift, and one-round fine-tuning does not isolate dataset size from on-policy adaptation.
+- **Artifacts:** `DAGGER_README.md`; `models/dagger/full/learned_estimator.eqx`; `results/dagger/full/original/`, `results/dagger/full/finetuned/`, `results/dagger/full/paired_comparison.csv`.
+
+### Phase 2 interpretation and reporting guardrails (current through Milestone 9)
+
+1. On the common three-evaluation-seed protocol, **GRU-MAP** improves success at p=.30 from `56.02%` to `63.66%`; **GRU+DAgger** has the best observed result so far at `66.20%`. These are descriptive means, not claims of statistical significance against hard without their own seed-paired intervals.
+2. Weighted GRU action aggregation (`63.89%`), the empirical-prior structured filter (`51.62%`), and one-round fine-tuning (`66.20%`) should all be reported, including negative and uncertain findings. Do not select the 100% smoke-test success as the reported aggregation result.
+3. Phase 1's oracle success of `84.58%` and gap of `27.50 pp` came from a different **ten-seed** experiment. Do **not** combine it quantitatively with this three-seed Phase 2 hard baseline without a matched oracle rerun.
+4. The GRU checkpoint was chosen using the same seed cohort later used for evaluation, so this is **not** an independently held-out test; only nine epsilon-free formulas were evaluated; the frozen actor itself still receives the ordinary grid (which includes true current-cell letter channels). At p=0, equality is imposed via the tracker bypass rather than learned perfect inference. With only three policy-seed units, seed-level CIs are wide and do not establish transfer across formulas/layouts.
+5. The original Phase 1 plan and the Phase 2 implementation handoff above are **historical snapshots**; their statements about future learned interventions/no runtime results are superseded by these completed records. Results are preserved as reported in the CLI; numeric tables here were not independently reloaded from the user's latest local CSV files.
