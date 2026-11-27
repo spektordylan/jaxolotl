@@ -3,7 +3,7 @@
 Collects rollouts using the pretrained frozen SemLTL policies under noisy proposition
 observations, recording:
 - Inputs: noisy_assignment (int32), prev_action (int32), hard_state (int32)
-- Labels: true_state (int32)
+- Labels: true_state (int32), true_assignment (int32); optional for structured filter
 - Metadata: active_mask (bool), num_states (int32)
 
 Usage:
@@ -52,6 +52,7 @@ class StepTraces(NamedTuple):
     prev_action: jax.Array
     hard_state: jax.Array
     true_state: jax.Array
+    true_assignment: jax.Array
 
 
 class Carry(NamedTuple):
@@ -74,6 +75,7 @@ def empty_step_traces(t: int, n: int) -> StepTraces:
         prev_action=z,
         hard_state=z,
         true_state=z,
+        true_assignment=z,
     )
 
 
@@ -122,6 +124,7 @@ def rollout_collector(
         )
         active = ~completed
         true_q = transition.state.ldba_state
+        true_assignment = jax.vmap(base_env.map_assignment_to_index)(transition.propositions)
         hard_q = transition.state.perceived_ldba_state
 
         # action is tuple: (physical_action, epsilon_action)
@@ -133,6 +136,7 @@ def rollout_collector(
             prev_action=traces.prev_action.at[idx].set(jnp.where(active, phys_action, 4)),
             hard_state=traces.hard_state.at[idx].set(jnp.where(active, hard_q, 0)),
             true_state=traces.true_state.at[idx].set(jnp.where(active, true_q, 0)),
+            true_assignment=traces.true_assignment.at[idx].set(jnp.where(active, true_assignment, 0)),
         )
 
         next_completed = completed | transition.done
@@ -220,6 +224,7 @@ def main():
         all_u = []
         all_q_hard = []
         all_q_true = []
+        all_a_true = []
         all_mask = []
         all_num_states = []
         all_model_seeds = []
@@ -253,6 +258,7 @@ def main():
                     all_u.append(np.asarray(jnp.transpose(traces.prev_action)))
                     all_q_hard.append(np.asarray(jnp.transpose(traces.hard_state)))
                     all_q_true.append(np.asarray(jnp.transpose(traces.true_state)))
+                    all_a_true.append(np.asarray(jnp.transpose(traces.true_assignment)))
                     all_mask.append(np.asarray(jnp.transpose(traces.active)))
                     all_num_states.append(np.full((episodes_per_cond,), num_s, dtype=np.int32))
                     all_model_seeds.append(np.full((episodes_per_cond,), model_seed, dtype=np.int32))
@@ -264,6 +270,7 @@ def main():
             "prev_actions": np.concatenate(all_u, axis=0),
             "hard_states": np.concatenate(all_q_hard, axis=0),
             "true_states": np.concatenate(all_q_true, axis=0),
+            "true_assignments": np.concatenate(all_a_true, axis=0),
             "active_mask": np.concatenate(all_mask, axis=0),
             "num_states": np.concatenate(all_num_states, axis=0),
             "model_seeds": np.concatenate(all_model_seeds, axis=0),
