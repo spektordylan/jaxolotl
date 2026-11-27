@@ -1,0 +1,54 @@
+{
+  "git_revision_at_run": "46f5d9e6ff942b2c9d393f71c3e051d22f538a6f",
+  "method": "learned GRU estimator in closed-loop vs hard-monitor baseline",
+  "estimator_model_path": "/home/dilab/Desktop/SemLTL/jaxolotl/experiments/belief_semltl/models/full/learned_estimator.eqx",
+  "noise_probabilities": [
+    0.0,
+    0.1,
+    0.3
+  ],
+  "formula_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9
+  ],
+  "model_seeds": [
+    7,
+    8,
+    9
+  ],
+  "excluded_from_estimator_gradient_training": true,
+  "checkpoint_training_policy_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "checkpoint_selection_policy_seeds": [
+    7,
+    8,
+    9
+  ],
+  "num_episodes_per_condition": 16,
+  "run_key_base": "key(200) folded with model_seed, formula_idx, integer noise prob",
+  "deterministic_policy": false,
+  "true_proposition_access": "ground-truth for scoring only; estimator receives only noisy obs, prev action, hard state",
+  "limitations": [
+    "Estimator trained on hard-policy trajectories; distribution shift when learned estimator controls policy (trajectory distribution differs from training)",
+    "Independent uniform proposition prior is not LetterWorld dynamics",
+    "No epsilon transitions evaluated",
+    "Original frozen actor sees LetterWorld's unmasked raw grid; only the learned estimator is proposition-channel restricted",
+    "Results are matched by environment run key, not the same physical trajectories after policies diverge",
+    "This run is not a same-trajectory test of state inference; use offline checkpoint diagnostics separately",
+    "The provided checkpoint was selected using the 7..9 validation split: 7..9 are not an untouched final test set"
+  ]
+}

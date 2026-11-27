@@ -1,0 +1,30 @@
+{
+  "git_revision": "ca585f3a6a6e6f5f66ca6875aa3b9fb848dc7dec",
+  "noise_probabilities": [
+    0.0,
+    0.3
+  ],
+  "alphas": [
+    0.0,
+    0.5,
+    1.0
+  ],
+  "formula_indices": [
+    0,
+    3
+  ],
+  "model_seeds": [
+    0,
+    1
+  ],
+  "num_episodes_per_seed_formula_condition": 4,
+  "key": "jax.random.key(100) reused across conditions",
+  "policy_training": "frozen pretrained; stochastic action selection",
+  "aggregation": "hierarchical state-selection then original actor sampling; exact policy probability mixture in distribution",
+  "belief_model": "uniform-independent categorical proposition prior; approximate, same as belief pilot",
+  "information_boundary": "only corrupt propositions update belief; true states determine reward/termination only",
+  "correctness_gates": "alpha=0 equals hard for every p, all alpha match hard at p=0",
+  "epsilon_formula_5": "excluded",
+  "multiplicity": "exploratory predefined alphas; no held-out LTL generalization",
+  "note": "Action-distribution JS divergence not measured by this patch; hierarchical sampling does not expose per-state logits"
+}

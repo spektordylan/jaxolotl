@@ -108,3 +108,11 @@ For a true assignment `a`, the reported label `y` is correct with probability `1
 - `ORACLE_README.md`: ablation implementation, validation and usage.
 - `MIXTURE_README.md`: completed policy-output mixture and hard-anchored variants, results, validation, and exact stochastic-mixture construction.
 - **This file** is the project-wide chronological narrative. Update this log when a new experiment completes and keep runnable scripts/outputs in their respective directories.
+
+---
+
+## Phase 2 implementation handoff (2026-11-27; results not yet executed)
+
+The partial learned-estimator branch in the exported ZIP included a collector, recurrent GRU model, a `full` checkpoint, and a draft closed-loop evaluator. A corrective patch was prepared without changing any archived results or checkpoints. It aligns online GRU initialization with the existing trajectory dataset (first update **after** the first physical action), masks invalid formula-dependent state logits in training and inference, enforces exact zero-noise parity, adds seed-paired outcome intervals, and safeguards output artifacts against overwriting. New collector datasets also record provenance and use the requested number of test episodes.
+
+The original checkpoint metrics (`models/full/metrics.json`, 72.02% raw state accuracy versus 62.30% hard on the archived split) are **pre-patch records**, not independently reproduced results. The archived `test.npz` was used for best-checkpoint selection, and therefore serves as a validation set. In particular, the 72.02% number does **not** establish a causal success benefit or independent generalization. Neither Jaxolotl parity nor closed-loop policy outcomes were executable in the patch-preparation environment because only the experiment subtree was supplied and the Jaxolotl/Pixi dependencies are absent. Follow `LEARNED_TRACKER_README.md` for required local validation gates and reproduction commands.

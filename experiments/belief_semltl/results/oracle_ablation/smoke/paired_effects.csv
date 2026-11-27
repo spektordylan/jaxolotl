@@ -1,0 +1,7 @@
+noise_prob,scope,formula_idx,oracle_minus_hard,ci_lower,ci_upper,num_seeds
+0.0,overall,-1,0.0,0.0,0.0,2
+0.0,formula,0,0.0,0.0,0.0,2
+0.0,formula,3,0.0,0.0,0.0,2
+0.3,overall,-1,0.125,-1.4632755920218368,1.7132755920218368,2
+0.3,formula,0,0.0,0.0,0.0,2
+0.3,formula,3,0.25,-2.9265511840436735,3.4265511840436735,2

@@ -1,0 +1,47 @@
+{
+  "git_revision_at_run": "45921d86e3130c2238e5528eb62332971273a203",
+  "method": "hard-policy closed-loop rollout with passive Bayesian replay on identical noisy observations",
+  "no_active_map_or_weighted_policy": true,
+  "noise_probabilities": [
+    0.0,
+    0.1,
+    0.3
+  ],
+  "formula_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9
+  ],
+  "model_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "num_episodes_per_seed_formula_condition": 16,
+  "randomness": "key(100) folded with model seed, original formula index, integer noise probability",
+  "uniform_assignment_prior": true,
+  "deterministic_policy": false,
+  "true_proposition_access": "ground-truth monitor and scoring only; passive filter receives perceived labels",
+  "initial_observation": "initial LDBA state remains one-hot; score after each physical action",
+  "confidence_intervals": "two-sided Student t across pretrained model seeds, fixed formula set",
+  "reference_evaluator_parity": "PASS",
+  "limitations": [
+    "Policy-induced trajectory distribution from hard baseline only",
+    "Uniform independent proposition prior is not LetterWorld's physical dynamics",
+    "Probability of true state and entropy measured on hard-policy trajectories only",
+    "No epsilon transitions evaluated"
+  ]
+}

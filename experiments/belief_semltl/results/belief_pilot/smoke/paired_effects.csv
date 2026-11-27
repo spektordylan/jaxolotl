@@ -1,0 +1,13 @@
+noise_prob,method,scope,formula_idx,mean_delta,ci_lower,ci_upper,num_seeds
+0.0,map,overall,-1,0.0,0.0,0.0,2
+0.0,map,formula,0,0.0,0.0,0.0,2
+0.0,map,formula,3,0.0,0.0,0.0,2
+0.0,weighted,overall,-1,0.0,0.0,0.0,2
+0.0,weighted,formula,0,0.0,0.0,0.0,2
+0.0,weighted,formula,3,0.0,0.0,0.0,2
+0.1,map,overall,-1,0.0,0.0,0.0,2
+0.1,map,formula,0,0.0,0.0,0.0,2
+0.1,map,formula,3,0.0,0.0,0.0,2
+0.1,weighted,overall,-1,0.0,-1.5882755920218368,1.5882755920218368,2
+0.1,weighted,formula,0,0.125,-1.4632755920218368,1.7132755920218368,2
+0.1,weighted,formula,3,-0.125,-1.7132755920218368,1.4632755920218368,2

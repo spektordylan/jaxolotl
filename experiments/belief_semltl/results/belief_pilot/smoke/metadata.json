@@ -1,0 +1,31 @@
+{
+  "git_revision_at_run": "2c23efa5985e302a64d98f8bcbc1612c2081dd05",
+  "status": "exploratory frozen-policy pilot",
+  "formula_indices": [
+    0,
+    3
+  ],
+  "formula_strings": [
+    "F (a & (!b U c)) & F d",
+    "!a U (b & (!c U (d & (!e U f))))"
+  ],
+  "epsilon_formula_5_excluded": true,
+  "methods": [
+    "hard",
+    "map",
+    "weighted"
+  ],
+  "noise_probabilities": [
+    0.0,
+    0.1
+  ],
+  "model_seeds": [
+    0,
+    1
+  ],
+  "num_episodes_per_seed_formula_condition": 4,
+  "evaluation_key": 100,
+  "belief_model": "uniform independent prior on 13 true assignments per step",
+  "zero_noise_episode_parity": "PASS",
+  "confidence_intervals": "two-sided Student t over pretrained model seed means"
+}
